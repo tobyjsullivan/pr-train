@@ -18,7 +18,7 @@ const package = require('./package.json');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function combineBranches(sg, rebase, from, to) {
-  if (program.rebase) {
+  if (rebase) {
     process.stdout.write(`rebasing ${to} onto branch ${from}... `);
   } else {
     process.stdout.write(`merging ${from} into branch ${to}... `);
@@ -65,7 +65,7 @@ async function getConfigPath(sg) {
 
 /**
  * @param {simpleGit.SimpleGit} sg
- * @return {Promise.<{trains: Array.<TrainCfg>}>}
+ * @return {Promise.<{trains: Array.<TrainCfg>, rebase_by_default: boolean?}>}
  */
 async function loadConfig(sg) {
   const path = await getConfigPath(sg);
@@ -214,6 +214,8 @@ async function main() {
     process.exit(1);
   }
 
+  const { rebase_by_default: rebaseByDefault } = ymlConfig;
+
   const { current: currentBranch, all: allBranches } = await sg.branchLocal();
   const trainCfg = await getBranchesConfigInCurrentTrain(sg, ymlConfig);
   if (!trainCfg) {
@@ -241,8 +243,9 @@ async function main() {
     return;
   }
 
+  const rebase = program.rebase || rebaseByDefault;
   for (let i = 0; i < sortedTrainBranches.length - 1; ++i) {
-    await combineBranches(sg, program.rebase, sortedTrainBranches[i], sortedTrainBranches[i + 1]);
+    await combineBranches(sg, rebase, sortedTrainBranches[i], sortedTrainBranches[i + 1]);
     await sleep(MERGE_STEP_DELAY_MS);
   }
 

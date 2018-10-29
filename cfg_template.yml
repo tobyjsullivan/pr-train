@@ -15,3 +15,7 @@ trains:
   #   - zoe_branch_regenerate_noisy_snapshots
   #   - zoe_fix_the_important_things:
   #       combined: true
+
+# The following additional configuration options are available.
+#
+# rebase_by_default: true
